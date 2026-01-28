@@ -25,6 +25,8 @@ Moss stores **distilled context snapshots** (capsules) for preserving working st
 | Browse | `list(workspace)` or `inventory()` |
 | Multi-fetch | `fetch_many(items: [{workspace, name}, ...])` |
 | Combine | `compose(items: [...], format: "markdown")` |
+| Bulk update | `bulk_update(workspace, set_phase: "archived")` — update metadata by filter |
+| Bulk delete | `bulk_delete(workspace, tag, ...)` — filter-based soft delete |
 | Delete | `delete(workspace, name)` — soft delete, recoverable |
 
 ## Before Storing: Distill First
@@ -123,6 +125,7 @@ See [examples.md](examples.md) for orchestration patterns.
 | `CAPSULE_TOO_LARGE` | Distill further (limit: 12,000 chars) |
 | `CAPSULE_TOO_THIN` | Add missing sections, or `allow_thin: true` |
 | `COMPOSE_TOO_LARGE` | Fewer items, or trim source capsules |
+| `CANCELLED` | Operation cancelled (context timeout) |
 
 **Note on `mode: "replace"`:** Only overwrites *active* capsules. If a capsule was soft-deleted, `replace` creates a new one (doesn't revive the deleted). To recover deleted capsules, use `export(include_deleted: true)` then `import`.
 

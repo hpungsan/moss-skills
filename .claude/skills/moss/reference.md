@@ -46,12 +46,14 @@ inventory(phase: "review")  # All review-phase capsules globally
 
 ## Batch Operations
 
-Two tools handle multiple capsules—they look similar but behave differently on failure:
+Several tools handle multiple capsules—they have different behaviors:
 
-| Tool | On missing item | Use when |
-|------|-----------------|----------|
+| Tool | Behavior | Use when |
+|------|----------|----------|
 | `fetch_many` | **Partial success** — returns found items + errors array | You need whatever's available |
-| `compose` | **All-or-nothing** — fails immediately | You need ALL items or none |
+| `compose` | **All-or-nothing** — fails on first missing | You need ALL items or none |
+| `bulk_update` | **Filter-based** — updates all matching capsules | Batch metadata changes |
+| `bulk_delete` | **Filter-based** — soft-deletes all matching | Batch cleanup |
 
 **fetch_many** returns:
 ```json
@@ -67,6 +69,16 @@ Check `errors` array—empty means all found.
 { "error": { "code": "NOT_FOUND", "message": "capsule not found: ..." } }
 ```
 No partial results. Fix the missing item and retry.
+
+**bulk_update** uses filters + update fields:
+```
+bulk_update(workspace: "project", set_phase: "archived")
+bulk_update(run_id: "task-1", set_role: "completed", set_tags: ["done"])
+```
+- Filters: `workspace`, `tag`, `name_prefix`, `run_id`, `phase`, `role` (AND semantics)
+- Updates: `set_phase`, `set_role`, `set_tags` (prefixed with `set_` to distinguish from filters)
+- Empty string (`""`) clears the field; empty array `[]` clears tags
+- Requires at least one filter AND one update field
 
 ## Backup & Restore
 
@@ -96,6 +108,7 @@ import(path: "/tmp/backup.jsonl", mode: "rename")    # Auto-suffix on collision
 | `CAPSULE_TOO_THIN` | Missing required sections | Add sections, or `allow_thin: true` |
 | `FILE_TOO_LARGE` | Import file > 25MB | Split the export file |
 | `COMPOSE_TOO_LARGE` | Composed bundle > 12,000 chars | Fewer items, or trim source capsules |
+| `CANCELLED` | Context cancelled during long-running op | Retry the operation |
 
 Error response format:
 ```json

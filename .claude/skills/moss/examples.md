@@ -255,6 +255,80 @@ Returns structured data (cannot be stored as capsule):
 }
 ```
 
+## Bulk Update by Filter
+
+Update metadata (phase, role, tags) on all capsules matching filters. Requires at least one filter AND one update field.
+
+**Archive all capsules in a workspace:**
+```
+bulk_update(workspace: "project", set_phase: "archived")
+```
+
+**Update role for completed run:**
+```
+bulk_update(run_id: "pr-review-123", set_role: "completed")
+```
+
+**Replace tags for capsules matching filters:**
+```
+bulk_update(workspace: "project", phase: "review", set_tags: ["reviewed", "approved"])
+```
+
+**Clear a field (empty string = null):**
+```
+bulk_update(workspace: "scratch", set_phase: "")  # Clears phase field
+bulk_update(run_id: "old-run", set_tags: [])      # Clears all tags
+```
+
+**Multiple update fields:**
+```
+bulk_update(
+  workspace: "project",
+  tag: "completed",
+  set_phase: "archived",
+  set_role: "done"
+)
+```
+
+Returns:
+```json
+{
+  "updated": 5,
+  "message": "Updated 5 capsules matching workspace=\"project\", tag=\"completed\"; set phase=\"archived\", role=\"done\""
+}
+```
+
+**Note:** Only targets active capsules. Filters use AND semantics (all must match).
+
+## Bulk Delete by Filter
+
+Delete all capsules matching filters (AND semantics). At least one filter required.
+
+**Delete all capsules in a workspace:**
+```
+bulk_delete(workspace: "scratch")
+```
+
+**Delete stale research capsules in a project:**
+```
+bulk_delete(workspace: "myproject", phase: "research", tag: "stale")
+```
+
+**Delete all capsules from a completed run:**
+```
+bulk_delete(run_id: "pr-review-123")
+```
+
+Returns:
+```json
+{
+  "deleted": 3,
+  "message": "Soft-deleted 3 capsules matching run_id=\"pr-review-123\""
+}
+```
+
+**Note:** Only targets active capsules. Already soft-deleted capsules are unaffected. Use `purge` to permanently remove soft-deleted capsules.
+
 ## Quick Scratch Note
 
 For temporary notes that don't need full structure:

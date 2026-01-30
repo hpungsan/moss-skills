@@ -42,6 +42,7 @@ Query by orchestration:
 latest(run_id: "feature-xyz", phase: "review", role: "qa")
 list(workspace: "default", run_id: "feature-xyz")
 inventory(phase: "review")  # All review-phase capsules globally
+search(query: "JWT", run_id: "feature-xyz")  # FTS5 search within run
 ```
 
 ## Batch Operations
@@ -50,6 +51,7 @@ Several tools handle multiple capsules—they have different behaviors:
 
 | Tool | Behavior | Use when |
 |------|----------|----------|
+| `search` | **Ranked results** — FTS5 full-text search with snippets | Find capsules by content |
 | `fetch_many` | **Partial success** — returns found items + errors array | You need whatever's available |
 | `compose` | **All-or-nothing** — fails on first missing | You need ALL items or none |
 | `bulk_update` | **Filter-based** — updates all matching capsules | Batch metadata changes |
@@ -79,6 +81,31 @@ bulk_update(run_id: "task-1", set_role: "completed", set_tags: ["done"])
 - Updates: `set_phase`, `set_role`, `set_tags` (prefixed with `set_` to distinguish from filters)
 - Empty string (`""`) clears the field; empty array `[]` clears tags
 - Requires at least one filter AND one update field
+
+## Full-Text Search
+
+**search** uses FTS5 for keyword search with relevance ranking:
+```
+search(query: "authentication")
+search(query: "JWT OR OAuth", workspace: "project")
+search(query: "auth*", run_id: "pr-123", phase: "review")
+search(query: "JWT", include_deleted: true)
+```
+
+**Query syntax:**
+- Simple: `authentication` (matches anywhere)
+- Phrase: `"user authentication"` (exact match)
+- Prefix: `auth*` (matches auth, authentication, authorize...)
+- Boolean: `JWT OR OAuth`, `Redis AND cache`, `NOT deprecated`
+
+**Filters:** `workspace`, `tag`, `run_id`, `phase`, `role` (AND semantics with query)
+
+**Options:** `include_deleted: true` to include soft-deleted capsules (default: false)
+
+**Results:**
+- Ranked by relevance (BM25), title matches weighted 5x higher
+- Returns `snippet` field with match context (~300 chars, `<b>` highlights)
+- Pagination: `limit` (default 20, max 100), `offset`
 
 ## Backup & Restore
 
@@ -130,6 +157,7 @@ Error response format:
 | Import file | 25 MB |
 | `list` page | 100 max |
 | `inventory` page | 500 max |
+| `search` page | 100 max |
 | `fetch_many` items | 50 max |
 | `compose` items | 50 max |
 
@@ -150,5 +178,6 @@ To revive a soft-deleted capsule, use `export` with `include_deleted: true`, the
 3. **Use `allow_thin` sparingly** — Only for quick scratch notes
 4. **Name meaningfully** — `auth-login-flow` not `capsule-1`
 5. **Use `latest`** — Quickest way to resume; add `include_text: true` for full content
-6. **Browse first** — `inventory` or `list` to find, then `fetch` to load
-7. **Soft deletes recover** — Use `include_deleted: true` to find them
+6. **Search by content** — `search(query: "JWT")` to find capsules by what they contain
+7. **Browse first** — `inventory` or `list` to find, then `fetch` to load
+8. **Soft deletes recover** — Use `include_deleted: true` to find them

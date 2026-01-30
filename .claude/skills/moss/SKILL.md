@@ -1,6 +1,6 @@
 ---
 name: moss
-description: Use when storing, fetching, or managing context capsules. Helps with session handoffs, multi-agent coordination, or preserving decisions across sessions.
+description: Use when storing, fetching, searching, or managing context capsules. Helps with session handoffs, multi-agent coordination, or preserving decisions across sessions.
 ---
 
 # Moss: Context Capsules for AI Session Handoffs
@@ -23,6 +23,7 @@ Moss stores **distilled context snapshots** (capsules) for preserving working st
 | Overwrite | `store(name, mode: "replace", capsule_text)` |
 | Get latest | `latest(workspace)` then `fetch(workspace, name)` |
 | Browse | `list(workspace)` or `inventory()` |
+| Search | `search(query: "JWT OR auth*")` — full-text search |
 | Multi-fetch | `fetch_many(items: [{workspace, name}, ...])` |
 | Combine | `compose(items: [...], format: "markdown")` |
 | Bulk update | `bulk_update(workspace, set_phase: "archived")` — update metadata by filter |

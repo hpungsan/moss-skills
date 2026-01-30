@@ -113,6 +113,61 @@ inventory(run_id: "pr-123", phase: "review")
 list(workspace: "default", include_deleted: true)
 ```
 
+## Search Capsules
+
+**Simple keyword search:**
+```
+search(query: "authentication")
+```
+
+Returns results ranked by relevance with match snippets:
+```json
+{
+  "items": [
+    {
+      "id": "01HX...",
+      "workspace": "default",
+      "name": "auth-refactor",
+      "snippet": "...using <b>authentication</b> tokens...",
+      "fetch_key": { "moss_capsule": "auth-refactor", "moss_workspace": "default" }
+    }
+  ],
+  "pagination": { "limit": 20, "offset": 0, "has_more": false, "total": 1 },
+  "sort": "relevance"
+}
+```
+
+**Phrase search (exact match):**
+```
+search(query: "\"user authentication\"")
+```
+
+**Prefix search:**
+```
+search(query: "auth*")  # Matches auth, authentication, authorize, etc.
+```
+
+**Boolean search:**
+```
+search(query: "JWT OR OAuth")
+search(query: "Redis AND cache")
+search(query: "authentication NOT deprecated")
+```
+
+**Search with filters:**
+```
+search(query: "security", workspace: "project")
+search(query: "JWT", run_id: "pr-review-123", phase: "review")
+search(query: "bug", tag: "urgent")
+search(query: "JWT", include_deleted: true)  # Include soft-deleted capsules
+```
+
+**Paginated search:**
+```
+search(query: "authentication", limit: 10, offset: 0)  # First page
+search(query: "authentication", limit: 10, offset: 10) # Second page
+```
+
 ## Multi-Agent Orchestration
 
 **Orchestrator sets up base context:**

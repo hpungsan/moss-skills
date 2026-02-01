@@ -29,6 +29,69 @@ Names are normalized: lowercased, whitespace collapsed.
 
 Fetch using either raw or normalized form—both work.
 
+## Capsule Schema
+
+### Input Fields (store/update)
+
+Fields you provide when creating or updating capsules.
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `workspace` | string | No | Namespace for organizing capsules. Default: `"default"` |
+| `name` | string | No | Unique handle within workspace. Omit for unnamed capsules. |
+| `title` | string | No | Human-readable title. Defaults to `name` if not provided. |
+| `capsule_text` | string | **Yes** | Main content. Must have 6 sections unless `allow_thin: true`. |
+| `tags` | string[] | No | Categorization tags (e.g., `["urgent", "frontend"]`) |
+| `source` | string | No | Origin identifier (e.g., session ID, file path) |
+| `run_id` | string | No | Orchestration run identifier for multi-agent workflows |
+| `phase` | string | No | Workflow phase (e.g., `"design"`, `"implement"`, `"review"`) |
+| `role` | string | No | Agent role (e.g., `"architect"`, `"qa-reviewer"`) |
+
+**Store-only options:**
+| Option | Type | Description |
+|--------|------|-------------|
+| `mode` | string | `"error"` (default, fail on collision) or `"replace"` (overwrite) |
+| `allow_thin` | bool | Skip section validation for quick notes. Default: `false` |
+
+### Output Fields (responses)
+
+Fields returned in API responses. Includes all input fields plus:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `id` | string | ULID, auto-generated. Use for precise lookups. |
+| `workspace_norm` | string | Normalized workspace (lowercased, trimmed) |
+| `name_norm` | string? | Normalized name (lowercased, trimmed) |
+| `capsule_chars` | int | Character count (runes, not bytes). Computed on store. |
+| `tokens_estimate` | int | Estimated LLM tokens (~chars/4). Computed on store. |
+| `created_at` | int | Unix timestamp when capsule was created |
+| `updated_at` | int | Unix timestamp of last modification |
+| `deleted_at` | int? | Unix timestamp when soft-deleted (null if active) |
+| `fetch_key` | object | Convenience object for re-fetching (see below) |
+
+**fetch_key structure:**
+```json
+{
+  "moss_capsule": "auth-refactor",
+  "moss_workspace": "default"
+}
+```
+Returned by `store`, `fetch`, `fetch_many`, and `search`. Pass to `fetch` for easy retrieval.
+
+### Response Variations by Tool
+
+| Tool | Returns | Notes |
+|------|---------|-------|
+| `fetch` | Full capsule | All fields including `capsule_text` |
+| `fetch_many` | Full capsules + errors | `items` array + `errors` array for missing |
+| `latest` | Summary only | Add `include_text: true` for full content |
+| `list` | Summaries | No `capsule_text`, includes `fetch_key` |
+| `inventory` | Summaries | No `capsule_text`, includes `fetch_key` |
+| `search` | Summaries + snippets | `snippet` field with `<b>` match highlights |
+| `compose` | Bundle | `bundle_text` (markdown) or `parts` array (JSON) |
+
+**Summary fields:** `id`, `workspace`, `workspace_norm`, `name`, `name_norm`, `title`, `capsule_chars`, `tokens_estimate`, `tags`, `source`, `run_id`, `phase`, `role`, `created_at`, `updated_at`, `deleted_at`, `fetch_key`
+
 ## Multi-Agent Orchestration Fields
 
 | Field | Purpose | Example values |
@@ -131,11 +194,14 @@ import(path: "/tmp/backup.jsonl", mode: "rename")    # Auto-suffix on collision
 | `NOT_FOUND` | Capsule doesn't exist | Check name/workspace spelling |
 | `NAME_ALREADY_EXISTS` | Name collision on store | Use `mode: "replace"` to overwrite |
 | `AMBIGUOUS_ADDRESSING` | Both id AND name provided | Use only one addressing mode |
+| `INVALID_REQUEST` | Invalid request parameters | Check parameter types and values |
+| `CONFLICT` | Concurrent modification conflict (reserved) | Retry with fresh data |
 | `CAPSULE_TOO_LARGE` | Exceeds 12,000 chars | Distill further, trim content |
 | `CAPSULE_TOO_THIN` | Missing required sections | Add sections, or `allow_thin: true` |
 | `FILE_TOO_LARGE` | Import file > 25MB | Split the export file |
 | `COMPOSE_TOO_LARGE` | Composed bundle > 12,000 chars | Fewer items, or trim source capsules |
 | `CANCELLED` | Context cancelled during long-running op | Retry the operation |
+| `INTERNAL` | Unexpected server error | Report bug if reproducible |
 
 Error response format:
 ```json

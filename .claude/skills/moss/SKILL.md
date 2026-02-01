@@ -5,6 +5,8 @@ description: Use when storing, fetching, searching, or managing context capsules
 
 # Moss: Context Capsules for AI Session Handoffs
 
+> **Full examples:** [examples.md](examples.md) | **Reference:** [reference.md](reference.md)
+
 Moss stores **distilled context snapshots** (capsules) for preserving working state across sessions, tools, or agents. Not a chat log—a structured summary of what matters.
 
 ## When NOT to Use Moss

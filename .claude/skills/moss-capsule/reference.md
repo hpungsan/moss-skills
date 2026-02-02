@@ -1,6 +1,6 @@
-# Moss Reference
+# Capsule Reference
 
-Detailed reference for Moss context capsules.
+Detailed reference for capsules.
 
 ## Section Synonyms
 
@@ -76,19 +76,19 @@ Fields returned in API responses. Includes all input fields plus:
   "moss_workspace": "default"
 }
 ```
-Returned by `store`, `fetch`, `fetch_many`, and `search`. Pass to `fetch` for easy retrieval.
+Returned by `capsule_store`, `capsule_fetch`, `capsule_fetch_many`, and `capsule_search`. Pass to `capsule_fetch` for easy retrieval.
 
 ### Response Variations by Tool
 
 | Tool | Returns | Notes |
 |------|---------|-------|
-| `fetch` | Full capsule | All fields including `capsule_text` |
-| `fetch_many` | Full capsules + errors | `items` array + `errors` array for missing |
-| `latest` | Summary only | Add `include_text: true` for full content |
-| `list` | Summaries | No `capsule_text`, includes `fetch_key` |
-| `inventory` | Summaries | No `capsule_text`, includes `fetch_key` |
-| `search` | Summaries + snippets | `snippet` field with `<b>` match highlights |
-| `compose` | Bundle | `bundle_text` (markdown) or `parts` array (JSON) |
+| `capsule_fetch` | Full capsule | All fields including `capsule_text` |
+| `capsule_fetch_many` | Full capsules + errors | `items` array + `errors` array for missing |
+| `capsule_latest` | Summary only | Add `include_text: true` for full content |
+| `capsule_list` | Summaries | No `capsule_text`, includes `fetch_key` |
+| `capsule_inventory` | Summaries | No `capsule_text`, includes `fetch_key` |
+| `capsule_search` | Summaries + snippets | `snippet` field with `<b>` match highlights |
+| `capsule_compose` | Bundle | `bundle_text` (markdown) or `parts` array (JSON) |
 
 **Summary fields:** `id`, `workspace`, `workspace_norm`, `name`, `name_norm`, `title`, `capsule_chars`, `tokens_estimate`, `tags`, `source`, `run_id`, `phase`, `role`, `created_at`, `updated_at`, `deleted_at`, `fetch_key`
 
@@ -102,10 +102,10 @@ Returned by `store`, `fetch`, `fetch_many`, and `search`. Pass to `fetch` for ea
 
 Query by orchestration:
 ```
-latest(run_id: "feature-xyz", phase: "review", role: "qa")
-list(workspace: "default", run_id: "feature-xyz")
-inventory(phase: "review")  # All review-phase capsules globally
-search(query: "JWT", run_id: "feature-xyz")  # FTS5 search within run
+capsule_latest(run_id: "feature-xyz", phase: "review", role: "qa")
+capsule_list(workspace: "default", run_id: "feature-xyz")
+capsule_inventory(phase: "review")  # All review-phase capsules globally
+capsule_search(query: "JWT", run_id: "feature-xyz")  # FTS5 search within run
 ```
 
 ## Batch Operations
@@ -114,11 +114,11 @@ Several tools handle multiple capsules—they have different behaviors:
 
 | Tool | Behavior | Use when |
 |------|----------|----------|
-| `search` | **Ranked results** — FTS5 full-text search with snippets | Find capsules by content |
-| `fetch_many` | **Partial success** — returns found items + errors array | You need whatever's available |
-| `compose` | **All-or-nothing** — fails on first missing | You need ALL items or none |
-| `bulk_update` | **Filter-based** — updates all matching capsules | Batch metadata changes |
-| `bulk_delete` | **Filter-based** — soft-deletes all matching | Batch cleanup |
+| `capsule_search` | **Ranked results** — FTS5 full-text search with snippets | Find capsules by content |
+| `capsule_fetch_many` | **Partial success** — returns found items + errors array | You need whatever's available |
+| `capsule_compose` | **All-or-nothing** — fails on first missing | You need ALL items or none |
+| `capsule_bulk_update` | **Filter-based** — updates all matching capsules | Batch metadata changes |
+| `capsule_bulk_delete` | **Filter-based** — soft-deletes all matching | Batch cleanup |
 
 **fetch_many** returns:
 ```json
@@ -137,8 +137,8 @@ No partial results. Fix the missing item and retry.
 
 **bulk_update** uses filters + update fields:
 ```
-bulk_update(workspace: "project", set_phase: "archived")
-bulk_update(run_id: "task-1", set_role: "completed", set_tags: ["done"])
+capsule_bulk_update(workspace: "project", set_phase: "archived")
+capsule_bulk_update(run_id: "task-1", set_role: "completed", set_tags: ["done"])
 ```
 - Filters: `workspace`, `tag`, `name_prefix`, `run_id`, `phase`, `role` (AND semantics)
 - Updates: `set_phase`, `set_role`, `set_tags` (prefixed with `set_` to distinguish from filters)
@@ -149,10 +149,10 @@ bulk_update(run_id: "task-1", set_role: "completed", set_tags: ["done"])
 
 **search** uses FTS5 for keyword search with relevance ranking:
 ```
-search(query: "authentication")
-search(query: "JWT OR OAuth", workspace: "project")
-search(query: "auth*", run_id: "pr-123", phase: "review")
-search(query: "JWT", include_deleted: true)
+capsule_search(query: "authentication")
+capsule_search(query: "JWT OR OAuth", workspace: "project")
+capsule_search(query: "auth*", run_id: "pr-123", phase: "review")
+capsule_search(query: "JWT", include_deleted: true)
 ```
 
 **Query syntax:**
@@ -174,17 +174,17 @@ search(query: "JWT", include_deleted: true)
 
 **Export:**
 ```
-export()                                    # All → ~/.moss/exports/<timestamp>.jsonl
-export(workspace: "frontend")               # One workspace
-export(path: "/tmp/backup.jsonl")           # Custom path
-export(include_deleted: true)               # Include soft-deleted
+capsule_export()                                    # All → ~/.moss/exports/<timestamp>.jsonl
+capsule_export(workspace: "frontend")               # One workspace
+capsule_export(path: "/tmp/backup.jsonl")           # Custom path
+capsule_export(include_deleted: true)               # Include soft-deleted
 ```
 
 **Import:**
 ```
-import(path: "/tmp/backup.jsonl")                    # mode: "error" (atomic, fail on collision)
-import(path: "/tmp/backup.jsonl", mode: "replace")   # Overwrite existing
-import(path: "/tmp/backup.jsonl", mode: "rename")    # Auto-suffix on collision
+capsule_import(path: "/tmp/backup.jsonl")                    # mode: "error" (atomic, fail on collision)
+capsule_import(path: "/tmp/backup.jsonl", mode: "replace")   # Overwrite existing
+capsule_import(path: "/tmp/backup.jsonl", mode: "rename")    # Auto-suffix on collision
 ```
 
 ## Error Handling
@@ -221,11 +221,11 @@ Error response format:
 |-------|---------|
 | Capsule size | 12,000 chars (~3k tokens) |
 | Import file | 25 MB |
-| `list` page | 100 max |
-| `inventory` page | 500 max |
-| `search` page | 100 max |
-| `fetch_many` items | 50 max |
-| `compose` items | 50 max |
+| `capsule_list` page | 100 max |
+| `capsule_inventory` page | 500 max |
+| `capsule_search` page | 100 max |
+| `capsule_fetch_many` items | 50 max |
+| `capsule_compose` items | 50 max |
 
 ## mode: "replace" Behavior
 
@@ -235,7 +235,7 @@ Error response format:
 - If the capsule was soft-deleted → creates a **new** capsule (doesn't revive)
 - If no capsule exists → creates new
 
-To revive a soft-deleted capsule, use `export` with `include_deleted: true`, then `import`.
+To revive a soft-deleted capsule, use `capsule_export` with `include_deleted: true`, then `capsule_import`.
 
 ## Tips
 
@@ -243,7 +243,7 @@ To revive a soft-deleted capsule, use `export` with `include_deleted: true`, the
 2. **Use `mode: "replace"`** — For iterative updates to same capsule
 3. **Use `allow_thin` sparingly** — Only for quick scratch notes
 4. **Name meaningfully** — `auth-login-flow` not `capsule-1`
-5. **Use `latest`** — Quickest way to resume; add `include_text: true` for full content
-6. **Search by content** — `search(query: "JWT")` to find capsules by what they contain
-7. **Browse first** — `inventory` or `list` to find, then `fetch` to load
+5. **Use `capsule_latest`** — Quickest way to resume; add `include_text: true` for full content
+6. **Search by content** — `capsule_search(query: "JWT")` to find capsules by what they contain
+7. **Browse first** — `capsule_inventory` or `capsule_list` to find, then `capsule_fetch` to load
 8. **Soft deletes recover** — Use `include_deleted: true` to find them

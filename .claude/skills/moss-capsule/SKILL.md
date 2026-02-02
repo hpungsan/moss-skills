@@ -1,18 +1,18 @@
 ---
-name: moss
+name: moss-capsule
 description: Use when storing, fetching, searching, or managing context capsules. Helps with session handoffs, multi-agent coordination, or preserving decisions across sessions.
 ---
 
-# Moss: Context Capsules for AI Session Handoffs
+# Capsules: Context Snapshots for AI Session Handoffs
 
 > **Full examples:** [examples.md](examples.md) | **Reference:** [reference.md](reference.md)
 
-Moss stores **distilled context snapshots** (capsules) for preserving working state across sessions, tools, or agents. Not a chat log—a structured summary of what matters.
+Capsules are **distilled context snapshots** for preserving working state across sessions, tools, or agents. Not a chat log—a structured summary of what matters.
 
-## When NOT to Use Moss
+## When NOT to Use Capsules
 
 - **Ephemeral debugging** — Use scratch files or logs, not capsules
-- **Real-time state** — Moss is for handoffs, not live sync between agents
+- **Real-time state** — Capsules are for handoffs, not live sync between agents
 - **Large data** — 12K char limit; store references to files, not file contents
 - **Chat transcripts** — Distill first; capsules are summaries, not logs
 - **Temporary single-session notes** — Just keep them in context; no need to persist
@@ -21,24 +21,24 @@ Moss stores **distilled context snapshots** (capsules) for preserving working st
 
 | Task | Command |
 |------|---------|
-| Store new | `store(workspace, name, capsule_text)` |
-| Overwrite | `store(name, mode: "replace", capsule_text)` |
-| Get latest | `latest(workspace)` then `fetch(workspace, name)` |
-| Browse | `list(workspace)` or `inventory()` |
-| Search | `search(query: "JWT OR auth*")` — full-text search |
-| Multi-fetch | `fetch_many(items: [{workspace, name}, ...])` |
-| Combine | `compose(items: [...], format: "markdown")` |
-| Bulk update | `bulk_update(workspace, set_phase: "archived")` — update metadata by filter |
-| Bulk delete | `bulk_delete(workspace, tag, ...)` — filter-based soft delete |
-| Delete | `delete(workspace, name)` — soft delete, recoverable |
+| Store new | `capsule_store(workspace, name, capsule_text)` |
+| Overwrite | `capsule_store(name, mode: "replace", capsule_text)` |
+| Get latest | `capsule_latest(workspace)` then `capsule_fetch(workspace, name)` |
+| Browse | `capsule_list(workspace)` or `capsule_inventory()` |
+| Search | `capsule_search(query: "JWT OR auth*")` — full-text search |
+| Multi-fetch | `capsule_fetch_many(items: [{workspace, name}, ...])` |
+| Combine | `capsule_compose(items: [...], format: "markdown")` |
+| Bulk update | `capsule_bulk_update(workspace, set_phase: "archived")` — update metadata by filter |
+| Bulk delete | `capsule_bulk_delete(workspace, tag, ...)` — filter-based soft delete |
+| Delete | `capsule_delete(workspace, name)` — soft delete, recoverable |
 
 ## Before Storing: Distill First
 
-Before calling `store`, distill your context:
+Before calling `capsule_store`, distill your context:
 
-> "Distill into a Moss capsule under 12,000 chars. State not story. Must include: Objective, Current status, Decisions/Constraints, Next actions, Key locations, Open questions/Risks. Max 1-3 tiny code snippets only if critical. If too long, compress—do not omit decisions or next actions."
+> "Distill into a capsule under 12,000 chars. State not story. Must include: Objective, Current status, Decisions/Constraints, Next actions, Key locations, Open questions/Risks. Max 1-3 tiny code snippets only if critical. If too long, compress—do not omit decisions or next actions."
 
-Moss stores the result. It doesn't summarize for you.
+`capsule_store` saves the result. It doesn't summarize for you.
 
 ## Capsule Format
 
@@ -77,25 +77,25 @@ Pick ONE (mutually exclusive):
 
 ```
 # WRONG - causes AMBIGUOUS_ADDRESSING error
-fetch(id: "01HX...", workspace: "default", name: "auth")
+capsule_fetch(id: "01HX...", workspace: "default", name: "auth")
 
 # CORRECT
-fetch(id: "01HX...")
-fetch(workspace: "default", name: "auth")
+capsule_fetch(id: "01HX...")
+capsule_fetch(workspace: "default", name: "auth")
 ```
 
 ## Output Bloat Rules
 
 | Tool | Returns `capsule_text`? |
 |------|------------------------|
-| `fetch` | Yes (default), No with `include_text: false` |
-| `fetch_many` | Yes (default), No with `include_text: false` |
-| `compose` | **Always** (returns `bundle_text`) |
-| `latest` | **No** (default), Yes with `include_text: true` |
-| `list` | **Never** |
-| `inventory` | **Never** |
+| `capsule_fetch` | Yes (default), No with `include_text: false` |
+| `capsule_fetch_many` | Yes (default), No with `include_text: false` |
+| `capsule_compose` | **Always** (returns `bundle_text`) |
+| `capsule_latest` | **No** (default), Yes with `include_text: true` |
+| `capsule_list` | **Never** |
+| `capsule_inventory` | **Never** |
 
-**Pattern:** Use `list`/`inventory` to browse, then `fetch` to load specific capsules.
+**Pattern:** Use `capsule_list`/`capsule_inventory` to browse, then `capsule_fetch` to load specific capsules.
 
 ## When to Skip Validation
 
@@ -111,9 +111,9 @@ Use `allow_thin: true` **only** for:
 Use `run_id`, `phase`, `role` to coordinate:
 
 ```
-store(name: "design", run_id: "task-1", phase: "design", role: "architect", ...)
-latest(run_id: "task-1", phase: "review")
-list(workspace: "default", run_id: "task-1")
+capsule_store(name: "design", run_id: "task-1", phase: "design", role: "architect", ...)
+capsule_latest(run_id: "task-1", phase: "review")
+capsule_list(workspace: "default", run_id: "task-1")
 ```
 
 See [examples.md](examples.md) for orchestration patterns.
@@ -130,7 +130,7 @@ See [examples.md](examples.md) for orchestration patterns.
 | `COMPOSE_TOO_LARGE` | Fewer items, or trim source capsules |
 | `CANCELLED` | Operation cancelled (context timeout) |
 
-**Note on `mode: "replace"`:** Only overwrites *active* capsules. If a capsule was soft-deleted, `replace` creates a new one (doesn't revive the deleted). To recover deleted capsules, use `export(include_deleted: true)` then `import`.
+**Note on `mode: "replace"`:** Only overwrites *active* capsules. If a capsule was soft-deleted, `replace` creates a new one (doesn't revive the deleted). To recover deleted capsules, use `capsule_export(include_deleted: true)` then `capsule_import`.
 
 See [reference.md](reference.md) for full error details.
 

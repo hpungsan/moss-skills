@@ -1,11 +1,11 @@
-# Moss Examples
+# Capsule Examples
 
-Practical examples for common Moss operations.
+Practical examples for common capsule operations.
 
 ## Store a New Capsule
 
 ```
-store(
+capsule_store(
   workspace: "default",
   name: "auth-refactor",
   capsule_text: "## Objective
@@ -45,7 +45,7 @@ Returns:
 ## Update Existing Capsule
 
 ```
-store(
+capsule_store(
   workspace: "default",
   name: "auth-refactor",
   mode: "replace",
@@ -81,43 +81,43 @@ Token generation complete. Middleware in progress.
 **Pattern 1: Quick check then load**
 ```
 # See what's most recent (no text, fast)
-latest(workspace: "default")
+capsule_latest(workspace: "default")
 # Returns: { name: "auth-refactor", updated_at: ..., phase: ... }
 
 # Load full content
-fetch(workspace: "default", name: "auth-refactor")
+capsule_fetch(workspace: "default", name: "auth-refactor")
 ```
 
 **Pattern 2: Direct load with text**
 ```
-latest(workspace: "default", include_text: true)
+capsule_latest(workspace: "default", include_text: true)
 ```
 
 ## Browse Capsules
 
 **List in workspace:**
 ```
-list(workspace: "default")
-list(workspace: "default", limit: 50, offset: 0)
+capsule_list(workspace: "default")
+capsule_list(workspace: "default", limit: 50, offset: 0)
 ```
 
 **Global inventory:**
 ```
-inventory()
-inventory(workspace: "frontend", tag: "urgent")
-inventory(run_id: "pr-123", phase: "review")
+capsule_inventory()
+capsule_inventory(workspace: "frontend", tag: "urgent")
+capsule_inventory(run_id: "pr-123", phase: "review")
 ```
 
 **Find deleted capsules:**
 ```
-list(workspace: "default", include_deleted: true)
+capsule_list(workspace: "default", include_deleted: true)
 ```
 
 ## Search Capsules
 
 **Simple keyword search:**
 ```
-search(query: "authentication")
+capsule_search(query: "authentication")
 ```
 
 Returns results ranked by relevance with match snippets:
@@ -139,40 +139,40 @@ Returns results ranked by relevance with match snippets:
 
 **Phrase search (exact match):**
 ```
-search(query: "\"user authentication\"")
+capsule_search(query: "\"user authentication\"")
 ```
 
 **Prefix search:**
 ```
-search(query: "auth*")  # Matches auth, authentication, authorize, etc.
+capsule_search(query: "auth*")  # Matches auth, authentication, authorize, etc.
 ```
 
 **Boolean search:**
 ```
-search(query: "JWT OR OAuth")
-search(query: "Redis AND cache")
-search(query: "authentication NOT deprecated")
+capsule_search(query: "JWT OR OAuth")
+capsule_search(query: "Redis AND cache")
+capsule_search(query: "authentication NOT deprecated")
 ```
 
 **Search with filters:**
 ```
-search(query: "security", workspace: "project")
-search(query: "JWT", run_id: "pr-review-123", phase: "review")
-search(query: "bug", tag: "urgent")
-search(query: "JWT", include_deleted: true)  # Include soft-deleted capsules
+capsule_search(query: "security", workspace: "project")
+capsule_search(query: "JWT", run_id: "pr-review-123", phase: "review")
+capsule_search(query: "bug", tag: "urgent")
+capsule_search(query: "JWT", include_deleted: true)  # Include soft-deleted capsules
 ```
 
 **Paginated search:**
 ```
-search(query: "authentication", limit: 10, offset: 0)  # First page
-search(query: "authentication", limit: 10, offset: 10) # Second page
+capsule_search(query: "authentication", limit: 10, offset: 0)  # First page
+capsule_search(query: "authentication", limit: 10, offset: 10) # Second page
 ```
 
 ## Multi-Agent Orchestration
 
 **Orchestrator sets up base context:**
 ```
-store(
+capsule_store(
   workspace: "default",
   name: "pr-123-base",
   run_id: "pr-review-123",
@@ -204,7 +204,7 @@ Base context created. Spawning review agents.
 
 **Agent A (security reviewer) stores findings:**
 ```
-store(
+capsule_store(
   workspace: "default",
   name: "pr-123-security",
   run_id: "pr-review-123",
@@ -234,7 +234,7 @@ Review complete. 1 blocker found.
 
 **Orchestrator collects all findings:**
 ```
-fetch_many(items: [
+capsule_fetch_many(items: [
   { workspace: "default", name: "pr-123-security" },
   { workspace: "default", name: "pr-123-qa" },
   { workspace: "default", name: "pr-123-docs" }
@@ -243,12 +243,12 @@ fetch_many(items: [
 
 **Or query by run_id:**
 ```
-list(workspace: "default", run_id: "pr-review-123")
+capsule_list(workspace: "default", run_id: "pr-review-123")
 ```
 
 **Compose all findings into one bundle:**
 ```
-compose(
+capsule_compose(
   items: [
     { workspace: "default", name: "pr-123-security" },
     { workspace: "default", name: "pr-123-qa" },
@@ -276,7 +276,7 @@ QA review of PR #123.
 
 **Compose and store as new capsule:**
 ```
-compose(
+capsule_compose(
   items: [
     { workspace: "default", name: "pr-123-security" },
     { workspace: "default", name: "pr-123-qa" },
@@ -294,7 +294,7 @@ compose(
 
 **JSON format for programmatic use:**
 ```
-compose(
+capsule_compose(
   items: [...],
   format: "json"
 )
@@ -316,28 +316,28 @@ Update metadata (phase, role, tags) on all capsules matching filters. Requires a
 
 **Archive all capsules in a workspace:**
 ```
-bulk_update(workspace: "project", set_phase: "archived")
+capsule_bulk_update(workspace: "project", set_phase: "archived")
 ```
 
 **Update role for completed run:**
 ```
-bulk_update(run_id: "pr-review-123", set_role: "completed")
+capsule_bulk_update(run_id: "pr-review-123", set_role: "completed")
 ```
 
 **Replace tags for capsules matching filters:**
 ```
-bulk_update(workspace: "project", phase: "review", set_tags: ["reviewed", "approved"])
+capsule_bulk_update(workspace: "project", phase: "review", set_tags: ["reviewed", "approved"])
 ```
 
 **Clear a field (empty string = null):**
 ```
-bulk_update(workspace: "scratch", set_phase: "")  # Clears phase field
-bulk_update(run_id: "old-run", set_tags: [])      # Clears all tags
+capsule_bulk_update(workspace: "scratch", set_phase: "")  # Clears phase field
+capsule_bulk_update(run_id: "old-run", set_tags: [])      # Clears all tags
 ```
 
 **Multiple update fields:**
 ```
-bulk_update(
+capsule_bulk_update(
   workspace: "project",
   tag: "completed",
   set_phase: "archived",
@@ -361,17 +361,17 @@ Delete all capsules matching filters (AND semantics). At least one filter requir
 
 **Delete all capsules in a workspace:**
 ```
-bulk_delete(workspace: "scratch")
+capsule_bulk_delete(workspace: "scratch")
 ```
 
 **Delete stale research capsules in a project:**
 ```
-bulk_delete(workspace: "myproject", phase: "research", tag: "stale")
+capsule_bulk_delete(workspace: "myproject", phase: "research", tag: "stale")
 ```
 
 **Delete all capsules from a completed run:**
 ```
-bulk_delete(run_id: "pr-review-123")
+capsule_bulk_delete(run_id: "pr-review-123")
 ```
 
 Returns:
@@ -382,14 +382,14 @@ Returns:
 }
 ```
 
-**Note:** Only targets active capsules. Already soft-deleted capsules are unaffected. Use `purge` to permanently remove soft-deleted capsules.
+**Note:** Only targets active capsules. Already soft-deleted capsules are unaffected. Use `capsule_purge` to permanently remove soft-deleted capsules.
 
 ## Quick Scratch Note
 
 For temporary notes that don't need full structure:
 
 ```
-store(
+capsule_store(
   workspace: "scratch",
   name: "debug-notes",
   allow_thin: true,
@@ -402,11 +402,11 @@ store(
 **Name collision:**
 ```
 # First attempt
-store(name: "auth", capsule_text: "...")
+capsule_store(name: "auth", capsule_text: "...")
 # Error: NAME_ALREADY_EXISTS
 
 # Fix: use replace mode
-store(name: "auth", mode: "replace", capsule_text: "...")
+capsule_store(name: "auth", mode: "replace", capsule_text: "...")
 ```
 
 **Capsule too large:**
@@ -426,5 +426,5 @@ store(name: "auth", mode: "replace", capsule_text: "...")
 
 # Fix: add missing sections
 # Or for scratch notes:
-store(name: "note", allow_thin: true, capsule_text: "...")
+capsule_store(name: "note", allow_thin: true, capsule_text: "...")
 ```

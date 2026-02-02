@@ -1,29 +1,24 @@
 # Moss Skills
 
-Skills and rules for using [Moss](https://github.com/hpungsan/moss) with AI coding tools.
+Skills for using [Moss](https://github.com/hpungsan/moss) primitives with AI coding tools.
 
-Moss is a local context capsule store for portable AI handoffs, multi-agent orchestration, and cross-tool context sharing. These files teach AI tools how to use Moss correctly — capsule format, addressing modes, orchestration patterns, and error handling.
+## Skills
 
-## Supported Tools
+| Skill | Primitive | Status |
+|-------|-----------|--------|
+| `moss-capsule` | Capsule (markdown handoffs) | Available |
+| `moss-artifact` | Artifact (structured JSON) | Planned |
 
-| Tool | Path | Status |
-|------|------|--------|
-| Claude Code | `.claude/skills/moss/` | Available |
-| Codex | — | Planned |
+## Setup (Claude Code)
 
-## Setup
-
-### Claude Code
-
-Copy `.claude/skills/moss/` into your project's `.claude/skills/` directory.
+Copy the skill folder into your project:
 
 ```bash
-cp -r .claude/skills/moss/ /path/to/your/project/.claude/skills/moss/
+cp -r .claude/skills/moss-capsule/ /path/to/project/.claude/skills/
 ```
 
-Requires [Moss](https://github.com/hpungsan/moss) MCP server configured in your project's `.mcp.json`.
+Requires Moss MCP server in `.mcp.json`. See [Moss setup](https://github.com/hpungsan/moss/blob/main/docs/setup/claude-code.md).
 
 ## Links
 
 - [Moss](https://github.com/hpungsan/moss) — Core tool
-

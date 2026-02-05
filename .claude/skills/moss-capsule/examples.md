@@ -76,6 +76,60 @@ Token generation complete. Middleware in progress.
 )
 ```
 
+## Append to Section
+
+Add content to a specific section without rewriting the full capsule:
+
+```
+capsule_append(
+  workspace: "default",
+  name: "auth-refactor",
+  section: "Decisions",
+  content: "- Key rotation: support 2 active keys during rotation period"
+)
+```
+
+Returns:
+```json
+{
+  "id": "01HX7YGBK3...",
+  "fetch_key": { "moss_capsule": "auth-refactor", "moss_workspace": "default" },
+  "section_hit": "## Decisions",
+  "replaced": false
+}
+```
+
+**Accumulate design reviews:**
+```
+capsule_append(
+  workspace: "default",
+  name: "pr-123-design",
+  section: "Design Reviews",
+  content: "Round 2: APPROVE\n- Security concerns addressed\n- Added rate limiting"
+)
+```
+
+**Replace placeholder:**
+```
+# If section contains only "(pending)" or "TBD", replaces it entirely
+capsule_append(
+  workspace: "default",
+  name: "auth-refactor",
+  section: "Open questions",
+  content: "- How to handle token refresh during deploy?"
+)
+# Returns: { "replaced": true, ... }
+```
+
+**Use synonyms:**
+```
+# "Status" matches "## Current status"
+capsule_append(name: "auth", section: "Status", content: "Middleware complete")
+
+# "goal" matches "## Objective"
+capsule_append(name: "auth", section: "goal", content: "Added: support SSO")
+```
+
 ## Resume Work
 
 **Pattern 1: Quick check then load**

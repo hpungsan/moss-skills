@@ -89,6 +89,7 @@ Returned by `capsule_store`, `capsule_fetch`, `capsule_fetch_many`, and `capsule
 | `capsule_inventory` | Summaries | No `capsule_text`, includes `fetch_key` |
 | `capsule_search` | Summaries + snippets | `snippet` field with `<b>` match highlights |
 | `capsule_compose` | Bundle | `bundle_text` (markdown) or `parts` array (JSON) |
+| `capsule_append` | Confirmation | `id`, `section_hit`, `replaced`, `fetch_key` |
 
 **Summary fields:** `id`, `workspace`, `workspace_norm`, `name`, `name_norm`, `title`, `capsule_chars`, `tokens_estimate`, `tags`, `source`, `run_id`, `phase`, `role`, `created_at`, `updated_at`, `deleted_at`, `fetch_key`
 
@@ -170,6 +171,40 @@ capsule_search(query: "JWT", include_deleted: true)
 - Returns `snippet` field with match context (~300 chars, `<b>` highlights)
 - Pagination: `limit` (default 20, max 100), `offset`
 
+## Section Append
+
+Append content to a specific section without rewriting the full capsule:
+
+```
+capsule_append(workspace: "default", name: "auth", section: "Decisions", content: "Round 2: Approved")
+capsule_append(id: "01HX...", section: "Status", content: "Implementation complete")
+```
+
+**Section matching:**
+- Case-insensitive: "status" matches "## Status"
+- Synonym-aware: "Status" matches "## Current status", "goal" matches "## Objective"
+- Custom sections work too: "Design Reviews" matches "## Design Reviews"
+
+**Placeholder handling:** If section contains only placeholder text (`(pending)`, `TBD`, `N/A`, `-`, `none`), replaces it entirely. Otherwise appends after existing content with blank line separator.
+
+**Response:**
+```json
+{
+  "id": "01HX...",
+  "fetch_key": { "moss_capsule": "auth", "moss_workspace": "default" },
+  "section_hit": "## Decisions",
+  "replaced": false
+}
+```
+- `section_hit`: Actual header that matched
+- `replaced`: `true` if placeholder was replaced, `false` if content was appended
+- `fetch_key`: Omitted for unnamed capsules
+
+**Errors:**
+- Section not found → `INVALID_REQUEST` (422)
+- Result exceeds size limit → `CAPSULE_TOO_LARGE` (413)
+- JSON format capsule (no markdown sections) → `INVALID_REQUEST` (422)
+
 ## Backup & Restore
 
 **Export:**
@@ -241,9 +276,10 @@ To revive a soft-deleted capsule, use `capsule_export` with `include_deleted: tr
 
 1. **Distill, don't dump** — Capsules are summaries, not transcripts
 2. **Use `mode: "replace"`** — For iterative updates to same capsule
-3. **Use `allow_thin` sparingly** — Only for quick scratch notes
-4. **Name meaningfully** — `auth-login-flow` not `capsule-1`
-5. **Use `capsule_latest`** — Quickest way to resume; add `include_text: true` for full content
-6. **Search by content** — `capsule_search(query: "JWT")` to find capsules by what they contain
-7. **Browse first** — `capsule_inventory` or `capsule_list` to find, then `capsule_fetch` to load
-8. **Soft deletes recover** — Use `include_deleted: true` to find them
+3. **Use `capsule_append` for history** — Add to sections without rewriting (reviews, decisions, status updates)
+4. **Use `allow_thin` sparingly** — Only for quick scratch notes
+5. **Name meaningfully** — `auth-login-flow` not `capsule-1`
+6. **Use `capsule_latest`** — Quickest way to resume; add `include_text: true` for full content
+7. **Search by content** — `capsule_search(query: "JWT")` to find capsules by what they contain
+8. **Browse first** — `capsule_inventory` or `capsule_list` to find, then `capsule_fetch` to load
+9. **Soft deletes recover** — Use `include_deleted: true` to find them

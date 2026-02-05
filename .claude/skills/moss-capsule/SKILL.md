@@ -23,6 +23,7 @@ Capsules are **distilled context snapshots** for preserving working state across
 |------|---------|
 | Store new | `capsule_store(workspace, name, capsule_text)` |
 | Overwrite | `capsule_store(name, mode: "replace", capsule_text)` |
+| Append | `capsule_append(name, section: "Status", content: "...")` — add to section |
 | Get latest | `capsule_latest(workspace)` then `capsule_fetch(workspace, name)` |
 | Browse | `capsule_list(workspace)` or `capsule_inventory()` |
 | Search | `capsule_search(query: "JWT OR auth*")` — full-text search |
@@ -96,6 +97,20 @@ capsule_fetch(workspace: "default", name: "auth")
 | `capsule_inventory` | **Never** |
 
 **Pattern:** Use `capsule_list`/`capsule_inventory` to browse, then `capsule_fetch` to load specific capsules.
+
+## Appending to Sections
+
+Use `capsule_append` to add content to a specific section without rewriting the full capsule:
+
+```
+capsule_append(workspace: "default", name: "auth", section: "Decisions", content: "Round 2: Approved")
+```
+
+- **Section matching:** Case-insensitive, synonym-aware ("Status" matches "Current status")
+- **Placeholder handling:** Replaces `(pending)`, `TBD`, etc. if section only contains placeholder
+- **Append behavior:** Otherwise adds after existing content with blank line separator
+
+Use case: Accumulating history (design reviews, verification rounds, decisions) without risk of losing previous content.
 
 ## When to Skip Validation
 

@@ -65,7 +65,7 @@ Key choices made and rationale
 - Unresolved issues or uncertainties
 ```
 
-See [reference.md](reference.md) for section synonyms and format variations.
+See [reference.md](reference.md) for accepted section names and format variations.
 
 ## Addressing Modes
 
@@ -106,9 +106,10 @@ Use `capsule_append` to add content to a specific section without rewriting the 
 capsule_append(workspace: "default", name: "auth", section: "Decisions", content: "Round 2: Approved")
 ```
 
-- **Section matching:** Case-insensitive, synonym-aware ("Status" matches "Current status")
+- **Section matching:** Exact header name, case-insensitive (use header as written, e.g., `## Status` → `"Status"`)
 - **Placeholder handling:** Replaces `(pending)`, `TBD`, etc. if section only contains placeholder
 - **Append behavior:** Otherwise adds after existing content with blank line separator
+- **Error messages:** Lists available sections if target not found
 
 Use case: Accumulating history (design reviews, verification rounds, decisions) without risk of losing previous content.
 

@@ -2,9 +2,9 @@
 
 Detailed reference for capsules.
 
-## Section Synonyms
+## Section Names (Lint Validation)
 
-Section names are case-insensitive. These synonyms are accepted:
+When storing a capsule, these section names satisfy the 6 required sections (case-insensitive):
 
 | Canonical | Also accepted |
 |-----------|---------------|
@@ -16,6 +16,8 @@ Section names are case-insensitive. These synonyms are accepted:
 | Open questions | Questions, Risks, Unknowns |
 
 **Formats accepted:** Markdown headers (`## Section`), colon-style (`Section:`), or JSON keys.
+
+**Note:** These synonyms apply to lint validation only. For `capsule_append`, use the exact header name as it appears in the capsule (see [Section Append](#section-append)).
 
 ## Name Normalization
 
@@ -177,13 +179,14 @@ Append content to a specific section without rewriting the full capsule:
 
 ```
 capsule_append(workspace: "default", name: "auth", section: "Decisions", content: "Round 2: Approved")
-capsule_append(id: "01HX...", section: "Status", content: "Implementation complete")
+capsule_append(id: "01HX...", section: "Current status", content: "Implementation complete")
 ```
 
 **Section matching:**
-- Case-insensitive: "status" matches "## Status"
-- Synonym-aware: "Status" matches "## Current status", "goal" matches "## Objective"
-- Custom sections work too: "Design Reviews" matches "## Design Reviews"
+- Exact header name match (case-insensitive)
+- No synonym resolution — use the header as written (e.g., `## Current status` → `"Current status"`)
+- Custom sections work: `## Design Reviews` → `"Design Reviews"`
+- Error message lists available sections if not found
 
 **Placeholder handling:** If section contains only placeholder text (`(pending)`, `TBD`, `N/A`, `-`, `none`), replaces it entirely. Otherwise appends after existing content with blank line separator.
 

@@ -121,13 +121,15 @@ capsule_append(
 # Returns: { "replaced": true, ... }
 ```
 
-**Use synonyms:**
+**Use exact header names:**
 ```
-# "Status" matches "## Current status"
-capsule_append(name: "auth", section: "Status", content: "Middleware complete")
+# Match exactly as the section appears (case-insensitive)
+capsule_append(name: "auth", section: "Current status", content: "Middleware complete")
 
-# "goal" matches "## Objective"
-capsule_append(name: "auth", section: "goal", content: "Added: support SSO")
+# Custom sections work too
+capsule_append(name: "design", section: "Design Reviews", content: "Round 2: APPROVE")
+
+# If section not found, error lists available sections
 ```
 
 ## Resume Work

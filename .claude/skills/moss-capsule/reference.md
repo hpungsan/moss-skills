@@ -119,7 +119,7 @@ Several tools handle multiple capsules—they have different behaviors:
 |------|----------|----------|
 | `capsule_search` | **Ranked results** — FTS5 full-text search with snippets | Find capsules by content |
 | `capsule_fetch_many` | **Partial success** — returns found items + errors array | You need whatever's available |
-| `capsule_compose` | **All-or-nothing** — fails on first missing | You need ALL items or none |
+| `capsule_compose` | **All-or-nothing** — fails on first missing. Optional `sections` filter. | You need ALL items or none |
 | `capsule_bulk_update` | **Filter-based** — updates all matching capsules | Batch metadata changes |
 | `capsule_bulk_delete` | **Filter-based** — soft-deletes all matching | Batch cleanup |
 
@@ -137,6 +137,16 @@ Check `errors` array—empty means all found.
 { "error": { "code": "NOT_FOUND", "message": "capsule not found: ..." } }
 ```
 No partial results. Fix the missing item and retry.
+
+**compose with sections filter:**
+```
+capsule_compose(items: [...], sections: ["Decisions", "Open questions"])
+```
+- Only includes named sections from each capsule (exact match, case-insensitive)
+- Output section order follows `sections` array order
+- Placeholder sections skipped; thin capsules pass through unchanged
+- Works with both markdown and JSON format
+- `sections` + `store_as`: auto-sets `allow_thin`
 
 **bulk_update** uses filters + update fields:
 ```

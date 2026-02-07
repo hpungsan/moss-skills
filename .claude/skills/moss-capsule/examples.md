@@ -330,6 +330,40 @@ QA review of PR #123.
 ...
 ```
 
+**Compose with sections filter (reduce context):**
+```
+capsule_compose(
+  items: [
+    { workspace: "default", name: "pr-123-security" },
+    { workspace: "default", name: "pr-123-qa" },
+    { workspace: "default", name: "pr-123-docs" }
+  ],
+  sections: ["Decisions", "Open questions"]
+)
+```
+
+Returns only the requested sections from each capsule:
+```markdown
+## pr-123-security
+
+## Decisions
+- Marked SQL injection as blocker
+- Input validation warning is non-blocking
+
+## Open questions
+- None
+
+---
+
+## pr-123-qa
+
+## Decisions
+...
+
+## Open questions
+...
+```
+
 **Compose and store as new capsule:**
 ```
 capsule_compose(
@@ -346,7 +380,7 @@ capsule_compose(
 )
 ```
 
-**Note:** `store_as` requires markdown format (default). JSON format + `store_as` returns an error.
+**Note:** `store_as` requires markdown format (default). JSON format + `store_as` returns an error. When combined with `sections`, `allow_thin` is auto-set on the stored capsule.
 
 **JSON format for programmatic use:**
 ```

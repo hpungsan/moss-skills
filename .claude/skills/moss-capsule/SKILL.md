@@ -28,7 +28,8 @@ Capsules are **distilled context snapshots** for preserving working state across
 | Browse | `capsule_list(workspace)` or `capsule_inventory()` |
 | Search | `capsule_search(query: "JWT OR auth*")` — full-text search |
 | Multi-fetch | `capsule_fetch_many(items: [{workspace, name}, ...])` |
-| Combine | `capsule_compose(items: [...], format: "markdown")` |
+| Combine | `capsule_compose(items: [...])` |
+| Combine (filtered) | `capsule_compose(items: [...], sections: ["Decisions", "Open questions"])` |
 | Bulk update | `capsule_bulk_update(workspace, set_phase: "archived")` — update metadata by filter |
 | Bulk delete | `capsule_bulk_delete(workspace, tag, ...)` — filter-based soft delete |
 | Delete | `capsule_delete(workspace, name)` — soft delete, recoverable |
